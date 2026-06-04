@@ -11,6 +11,10 @@ anime-capable image generation, reachable from a laptop over an SSH tunnel.
 Everything runs **on-device** (no cloud API keys) and is bound to `localhost`,
 reached only through an SSH tunnel.
 
+## Architecture
+
+![Architecture](docs/architecture.png)
+
 ## Hardware / platform
 - DGX Spark, **GB10** Grace-Blackwell, **119 GiB unified memory**, 20-core ARM64 (`aarch64`, `sm_121`)
 - Ubuntu 24.04, CUDA 13.0, Docker 29.x

@@ -9,6 +9,10 @@ How the stack is built, how to rebuild it, and every gotcha hit along the way.
 
 ## 1. Architecture
 
+![Architecture](docs/architecture.png)
+
+<details><summary>Text version</summary>
+
 ```
   Your Mac                                  DGX Spark (dgx.zrh.arts.moe)
   ────────                                  ────────────────────────────
@@ -24,6 +28,8 @@ How the stack is built, how to rebuild it, and every gotcha hit along the way.
                    │                              auth proxy :11435)
                    │                              └─ qwen3.6:35b, gpt-oss:120b (GPU)
 ```
+
+</details>
 
 Everything binds to **localhost** on the Spark. ComfyUI has **no authentication**,
 so it must never be bound to `0.0.0.0`; reach it only via the SSH tunnel.

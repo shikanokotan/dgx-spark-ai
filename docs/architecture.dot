@@ -1,0 +1,53 @@
+digraph stack {
+  rankdir=LR;
+  bgcolor="white";
+  pad=0.4; nodesep=0.35; ranksep=0.9;
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", color="#7f8c8d", penwidth=1.2];
+  edge  [fontname="Helvetica", fontsize=9, color="#5d6d7e", penwidth=1.2];
+  graph [fontname="Helvetica-Bold", fontsize=13, labelloc="t", labeljust="l"];
+
+  /* ---------------- client ---------------- */
+  subgraph cluster_mac {
+    label="Your Mac";
+    style="rounded,filled"; fillcolor="#eef4fb"; color="#9bbbe0";
+    cmd  [label="ComfyUI.command\n(double-click)", fillcolor="#cfe3fb"];
+    ccon [label="comfyui-connect.sh",  fillcolor="#dbeafe"];
+    ncon [label="nemoclaw-connect.sh", fillcolor="#dbeafe"];
+    cmd -> ccon [label="runs", style=dotted, color="#5b7aa8", fontcolor="#5b7aa8"];
+  }
+
+  /* ---------------- spark ---------------- */
+  subgraph cluster_spark {
+    label="DGX Spark · dgx.zrh.arts.moe  (GB10 · 119 GiB unified · ARM64 / sm_121 · CUDA 13)";
+    style="rounded,filled"; fillcolor="#f4f7f4"; color="#aac0aa";
+
+    subgraph cluster_img {
+      label="Image generation";
+      style="rounded,filled"; fillcolor="#eafaef"; color="#9fd6ad";
+      comfy   [label="ComfyUI\n127.0.0.1:8188", fillcolor="#cdeed8"];
+      qmodels [label="Qwen-Image 2512\nFP8 20.4 GB · BF16 40.8 GB\n+ anime LoRAs", fillcolor="#e3f6e9"];
+      comfy -> qmodels;
+    }
+
+    subgraph cluster_llm {
+      label="Chat / agents";
+      style="rounded,filled"; fillcolor="#f5eefb"; color="#c8a8e0";
+      dash    [label="NemoClaw dashboard\n127.0.0.1:18789", fillcolor="#e7d4fa"];
+      sandbox [label="OpenShell sandbox 'spark-assistant'\n+ OpenClaw agent", fillcolor="#efe2fb"];
+      ollama  [label="Ollama\n:11434  (auth proxy :11435)", fillcolor="#e7d4fa"];
+      llms    [label="qwen3.6:35b\ngpt-oss:120b", fillcolor="#efe2fb"];
+      dash -> sandbox;
+      sandbox -> ollama [label="host.openshell\n.internal:11435", fontsize=8];
+      ollama -> llms;
+    }
+
+    gpu [label="GB10 GPU  ·  119 GiB unified memory", shape=box,
+         style="filled,rounded", fillcolor="#fbe0e0", color="#e0a0a0", fontname="Helvetica-Bold"];
+    qmodels -> gpu [style=dashed, color="#c98e8e", arrowhead=none];
+    llms    -> gpu [style=dashed, color="#c98e8e", arrowhead=none];
+  }
+
+  /* ---------------- SSH tunnels ---------------- */
+  ccon -> comfy [label="ssh -L 8188",  color="#e08a2b", fontcolor="#b9700f", penwidth=2.4];
+  ncon -> dash  [label="ssh -L 18789", color="#e08a2b", fontcolor="#b9700f", penwidth=2.4];
+}

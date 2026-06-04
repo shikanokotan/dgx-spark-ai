@@ -35,6 +35,9 @@ at `http://127.0.0.1:8188`.
 First generation after a fresh start takes ~70–80 s (it loads the 20 GB model);
 after that each image is much faster — the model stays cached.
 
+![The Qwen2512-Anime-LoRA workflow in ComfyUI](docs/samples/comfyui-ui.png)
+*The pre-built `Qwen2512-Anime-LoRA` workflow: Load Diffusion Model → Load LoRA → CLIP/VAE → prompts → KSampler. Edit the prompt, click **Run**.*
+
 ### Example outputs
 | Base 2512 (prompted "anime style") | With the `Qwen Anime` LoRA |
 |---|---|
