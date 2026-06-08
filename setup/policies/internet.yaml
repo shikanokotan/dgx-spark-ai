@@ -1,0 +1,22 @@
+preset:
+  name: internet
+  description: "Full HTTPS internet access"
+network_policies:
+  internet:
+    name: internet
+    endpoints:
+      - host: "0.0.0.0/0"
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: GET, path: "/**" }
+          - allow: { method: POST, path: "/**" }
+          - allow: { method: PUT, path: "/**" }
+          - allow: { method: PATCH, path: "/**" }
+    binaries:
+      - { path: /usr/bin/curl }
+      - { path: /usr/bin/wget }
+      - { path: /usr/bin/git }
+      - { path: /usr/local/bin/node }
+      - { path: /usr/bin/python3 }

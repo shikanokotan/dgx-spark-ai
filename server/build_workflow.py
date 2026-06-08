@@ -1,4 +1,11 @@
-import json, os
+import json, os, sys
+
+# Optional first arg = a Spark username. When given, the SaveImage node writes to
+# output/<user>/ (per-user output folders on the shared instance) and the workflow
+# is saved as Qwen2512-<user>.json. With no arg, the shared default is regenerated.
+USER = sys.argv[1].strip() if len(sys.argv) > 1 and sys.argv[1].strip() else None
+SAVE_PREFIX = f"{USER}/qwen2512_anime" if USER else "qwen2512_anime"
+OUT_NAME = f"Qwen2512-{USER}.json" if USER else "Qwen2512-Anime-LoRA.json"
 
 def node(_id, typ, pos, widgets, inputs=None, outputs=None, size=(330,140)):
     return {
@@ -36,7 +43,7 @@ nodes=[
  node(9,"VAEDecode",(1600,80),[],
       inputs=[inp("samples","LATENT",9),inp("vae","VAE",10)],
       outputs=[out("IMAGE","IMAGE",[11])], size=(210,46)),
- node(10,"SaveImage",(1600,200),["qwen2512_anime"],
+ node(10,"SaveImage",(1600,200),[SAVE_PREFIX],
       inputs=[inp("images","IMAGE",11)], size=(420,460)),
 ]
 links=[
@@ -54,7 +61,11 @@ links=[
 ]
 wf={"last_node_id":10,"last_link_id":11,"nodes":nodes,"links":links,
     "groups":[],"config":{},"extra":{},"version":0.4}
-p=os.path.expanduser("~/ComfyUI/user/default/workflows/Qwen2512-Anime-LoRA.json")
+d=os.path.expanduser("~/ComfyUI/user/default/workflows")
+os.makedirs(d, exist_ok=True)
+p=os.path.join(d, OUT_NAME)
 open(p,"w").write(json.dumps(wf,indent=2))
 print("wrote",p,os.path.getsize(p),"bytes")
 print("json valid:",bool(json.load(open(p))))
+if USER:
+    print(f"SaveImage prefix -> {SAVE_PREFIX!r}  (images land in ~/ComfyUI/output/{USER}/)")

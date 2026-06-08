@@ -6,6 +6,11 @@ SSH tunnel is the only way in.
 
 > One-time: make sure you can `ssh dgx.zrh.arts.moe` without a password prompt
 > (SSH key already set up). All scripts default to that host.
+>
+> **Sharing the Spark with others?** If you log in with your own Spark account
+> (not `arts`), do the one-time setup in [MULTIUSER.md](MULTIUSER.md) first
+> (copy `client/dgx.conf.example` → `client/dgx.conf`, set your `user@host`).
+> Everything below then works unchanged.
 
 ---
 
@@ -26,6 +31,9 @@ at `http://127.0.0.1:8188`.
 ### Make a picture
 1. In ComfyUI, open the **Workflows** menu (left sidebar) → **`Qwen2512-Anime-LoRA`**.
    It's pre-wired: Qwen-Image 2512 (FP8) + an anime LoRA + a tuned sampler.
+   *(Sharing the Spark? If you've been given a personal **`Qwen2512-<your-name>`**
+   workflow, open that one instead — your images then save to your own
+   `output/<your-name>/` folder. See [MULTIUSER.md](MULTIUSER.md).)*
 2. Edit the **positive prompt**. Keep the trigger word at the start:
    - `Qwen Anime, 1girl, silver hair, holding a katana, detailed hands, cherry blossoms, ...`
 3. Click **Queue** (or press Ctrl+Enter).

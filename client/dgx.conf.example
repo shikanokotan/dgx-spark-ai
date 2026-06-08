@@ -1,0 +1,27 @@
+# dgx.conf — per-user connection settings for the DGX Spark AI client scripts.
+#
+# Copy this file so it gets picked up automatically (first match wins):
+#   cp client/dgx.conf.example client/dgx.conf            # repo-local (gitignored)
+#   # or, machine-wide for all clones:
+#   cp client/dgx.conf.example ~/.config/dgx-spark.conf
+#
+# The `:=` form means anything you export on the command line still overrides this
+# (e.g.  DGX_USER=other bash client/comfyui-connect.sh).
+
+# ── Pick your account ──────────────────────────────────────────────────────
+# If you set DGX_USER, the scripts connect as that account with NO prompt.
+# If you leave it unset, the scripts pop a menu and ask which account is yours.
+: "${DGX_USER:=}"            # e.g. lzr  (leave blank to be asked each time)
+: "${DGX_HOST:=dgx.zrh.arts.moe}"
+: "${DGX_USERS:=arts lzr yue yuki}"   # the names shown in the menu
+
+# The account that owns the shared services (don't change unless the owner moved).
+: "${CU_OWNER:=arts}"
+: "${NC_OWNER:=arts}"
+
+# ── Advanced ───────────────────────────────────────────────────────────────
+# Full override of the SSH target (skips DGX_USER/DGX_HOST and the menu entirely):
+# : "${CU_HOST:=you@dgx.zrh.arts.moe}"
+# : "${NC_HOST:=you@dgx.zrh.arts.moe}"
+# : "${CU_PORT:=8188}"
+# : "${NC_SANDBOX:=spark-assistant}"

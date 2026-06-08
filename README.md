@@ -22,22 +22,30 @@ reached only through an SSH tunnel.
 ## Repo layout
 ```
 client/                  run on your Mac/laptop
-  ComfyUI.command        double-click → tunnel + open ComfyUI in browser
+  Open ComfyUI.app       double-click → opens via Terminal.app (bypasses Ghostty etc.)
+  Open NemoClaw.app      double-click → NemoClaw chat, same terminal-independent way
+  ComfyUI.command        double-click → tunnel + open ComfyUI (uses default terminal)
   comfyui-connect.sh     ComfyUI tunnel (port 8188)
   nemoclaw-connect.sh    NemoClaw dashboard tunnel (port 18789, fresh token)
+  dgx.conf.example       per-user host/account config (copy → dgx.conf)
+  launchers/             AppleScript sources + build.sh for the two .app launchers
 server/                  run on the Spark
   comfyui-start.sh       start ComfyUI in a detached tmux session
   nemoclaw-fix-cdi.sh    fix the CDI/plymouth install hang
   nemoclaw-set-model.sh  switch NemoClaw's model (handles the --no-verify quirk)
-  build_workflow.py      regenerate the ComfyUI workflow template
+  build_workflow.py      regenerate the ComfyUI workflow template (opt. per-user)
+  comfyui-add-user-workflow.sh  per-user workflow → output/<user>/ folder
   workflows/             ComfyUI workflow template(s)
   test/                  headless generation tests (API)
 setup/                   run on the Spark, once
   install-comfyui.sh     venv + torch (cu130/aarch64) + ComfyUI
   download-models.sh     Qwen-Image 2512 + encoders + VAE + anime LoRAs
+  enable-multiuser.sh    let other local Spark accounts share the stack
 docs/samples/            example outputs
 ```
 
 ## Start here
+- **中文用户？看这个** → [快速上手.md](快速上手.md)（怎么用 `~/` 下那两个连接脚本）
 - **Just want to use it?** → [USERGUIDE.md](USERGUIDE.md)
+- **More than one person on the Spark?** → [MULTIUSER.md](MULTIUSER.md)
 - **Installing / maintaining / rebuilding?** → [ADMINGUIDE.md](ADMINGUIDE.md)

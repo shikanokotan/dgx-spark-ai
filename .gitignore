@@ -1,3 +1,6 @@
 .DS_Store
 *.pyc
 __pycache__/
+
+# per-user client config (copy from client/dgx.conf.example)
+client/dgx.conf

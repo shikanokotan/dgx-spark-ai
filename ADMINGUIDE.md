@@ -161,9 +161,50 @@ PATHs: `nemoclaw` → `~/.local/bin`; `ollama` → `/usr/local/bin`; ComfyUI ven
 
 ---
 
-## 6. Security notes
+## 6. Multiple users on the Spark
+
+The stack is a **single shared instance** (one ComfyUI, one NemoClaw assistant,
+the shared Ollama service) — the right model given the 119 GiB memory shared by
+20–65 GB models. Other local accounts reach it over their own SSH tunnels.
+
+One-time, as `arts`:
+```bash
+sudo bash setup/enable-multiuser.sh alice bob carol   # add more later: --add dave
+```
+This creates the `dgx-ai` group, installs two owner-scoped wrappers
+(`/usr/local/bin/nemoclaw-dashboard-url`, `/usr/local/bin/comfyui-ensure`), and a
+`NOPASSWD` sudoers drop-in (`/etc/sudoers.d/dgx-ai`) granting **only those two
+commands**, **only to `dgx-ai`**, **only as `arts`**. Other users then run the
+same client scripts pointed at `their-user@dgx.zrh.arts.moe` (via `dgx.conf`).
+
+- Revoke a user: `sudo gpasswd -d alice dgx-ai`.
+- Disable entirely: `sudo rm /etc/sudoers.d/dgx-ai /usr/local/bin/{nemoclaw-dashboard-url,comfyui-ensure}`.
+
+**Per-user output folders (ComfyUI).** Give each user a workflow that saves to
+`~/ComfyUI/output/<user>/` (organization, not access control — one instance, no
+auth, the gallery is still shared):
+```bash
+bash server/comfyui-add-user-workflow.sh lzr yue yuki   # run as arts, no sudo
+```
+Each generates `~/ComfyUI/user/default/workflows/Qwen2512-<user>.json` with the
+`SaveImage` prefix set to `<user>/…`. `build_workflow.py <user>` is the underlying
+one-shot; with no arg it regenerates the shared default.
+- Why wrappers+sudo: other users have neither the `nemoclaw` CLI nor the sandbox
+  state (both live in `arts`'s home), and can't (re)start the `arts`-owned ComfyUI.
+  Ollama needs nothing — it's a system service already on `127.0.0.1:11434`.
+
+Full per-user walkthrough: [MULTIUSER.md](MULTIUSER.md).
+
+---
+
+## 7. Security notes
 - All services bind **localhost** on the Spark; access is via SSH tunnel only.
 - **ComfyUI has no auth** — never expose port 8188 to the LAN/internet.
 - NemoClaw dashboard uses a rotating token (`nemoclaw spark-assistant dashboard-url`).
 - Local inference means **no data leaves the box** — no cloud API keys configured.
-- Sudo was needed only for: CDI spec generation and the Ollama systemd install.
+- Sudo was needed only for: CDI spec generation, the Ollama systemd install, and
+  (if enabled) the multi-user setup — a scoped `NOPASSWD` rule for exactly two
+  owner-run wrappers, never a general shell (see §6).
+- **Multi-user = shared instance.** Everyone tunnelling to ComfyUI shares one
+  queue and one `~/ComfyUI/output/`; there's no per-user isolation. Fine for a
+  trusted team, not for mutually-distrusting users.
