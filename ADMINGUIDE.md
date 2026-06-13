@@ -197,7 +197,46 @@ Full per-user walkthrough: [MULTIUSER.md](MULTIUSER.md).
 
 ---
 
-## 7. Security notes
+## 7. NemoClaw agent: web access & model choice
+
+### Giving the agent outbound web access (`web_fetch`)
+The OpenClaw agent's `web_fetch` tool needs the sandbox egress policy to allow
+the target hosts. Apply the curated allowlist:
+```bash
+bash setup/apply-egress-policy.sh        # = nemoclaw spark-assistant policy-add --from-file setup/policies/internet.yaml --yes
+```
+Verify in a **new** NemoClaw chat: `web_fetch({ url: "https://httpbin.org/ip" })` → returns JSON.
+
+> **Gotchas (all learned the hard way — see comments in `setup/policies/internet.yaml`):**
+> - OpenShell **forbids allow-all egress**: `host: "0.0.0.0/0"` is silently inert
+>   (proxy matches by *hostname*, not IP) and `host: "*"` is rejected. Enumerate
+>   hostnames or `*.domain.com`.
+> - `web_fetch` runs as **node**, so `/usr/local/bin/node` (and `/usr/bin/node`)
+>   must be in the preset's `binaries`, or requests are denied even for allowed hosts.
+> - Use **`tls: skip, access: full`** (raw passthrough). Plain `access: full`
+>   makes the proxy terminate TLS and the connection **hangs/times out**.
+> - For "browse any site" research, prefer the managed **`nous-web`** gateway
+>   preset over opening raw egress here.
+
+### Model: use `qwen3.6:35b`, not `gpt-oss:120b`
+`gpt-oss:120b` (65 GB) is **too slow on this box** — agent inference to
+`inference.local` times out at 120 s every turn, which half-paralyses the agent
+(it then fabricates errors like "no network"). Keep the agent on the faster model:
+```bash
+bash server/nemoclaw-set-model.sh qwen3.6:35b
+```
+
+> **Gotcha — never `nemoclaw rebuild` casually.** `rebuild` **destroys then
+> recreates** the sandbox and its `onboard --resume` step needs **interactive
+> sudo** (for the Ollama loopback override); if sudo can't prompt it leaves the
+> sandbox **destroyed**. Recover with: `pkill -f openshell-gateway` (stale gateway),
+> then `nemoclaw onboard --resume`, then `nemoclaw spark-assistant snapshot restore <name>`.
+> Snapshots/backups live in `~/.nemoclaw/rebuild-backups/`. Prefer `nemoclaw
+> spark-assistant recover` / `doctor` over `rebuild`.
+
+---
+
+## 8. Security notes
 - All services bind **localhost** on the Spark; access is via SSH tunnel only.
 - **ComfyUI has no auth** — never expose port 8188 to the LAN/internet.
 - NemoClaw dashboard uses a rotating token (`nemoclaw spark-assistant dashboard-url`).

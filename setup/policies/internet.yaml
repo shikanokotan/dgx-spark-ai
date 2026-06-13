@@ -1,22 +1,46 @@
+# NemoClaw sandbox egress allowlist for the shared `spark-assistant` agent.
+#
+# Apply on the Spark (as arts):
+#   nemoclaw spark-assistant policy-add --from-file setup/policies/internet.yaml --yes
+#
+# WHY IT LOOKS LIKE THIS — hard-won lessons (2026-06-08):
+#  * OpenShell FORBIDS allow-all egress. `host: "0.0.0.0/0"` is silently
+#    ineffective (the proxy matches CONNECT by *hostname*, not IP/CIDR) and
+#    `host: "*"` is rejected outright ("host wildcard '*' matches all hosts;
+#    use specific patterns like '*.example.com'"). You MUST enumerate hostnames
+#    or per-domain wildcards (`*.example.com`).
+#  * `web_fetch` (the agent's HTTP tool) runs as NODE, so the `node` binary must
+#    be in `binaries` — otherwise the request is denied even if the host is
+#    allowed. (The built-in `github` preset only lists `git`, which is why
+#    web_fetch to api.github.com failed before.)
+#  * Use `tls: skip, access: full` (raw L4 passthrough). With plain
+#    `access: full` the proxy tries to terminate TLS for the host and the
+#    connection HANGS / times out. `tls: skip` makes it pass bytes through
+#    untouched (same shape the built-in `brew` preset uses for github/ghcr).
+#
+# To allow more sites: add `{ host: <name|*.domain>, port: 443, tls: skip, access: full }`
+# lines and re-run policy-add. For broad "research any site" access, prefer the
+# managed `nous-web` gateway preset instead of opening raw egress here.
 preset:
   name: internet
-  description: "Full HTTPS internet access"
+  description: "Curated HTTPS egress allowlist (raw passthrough; web_fetch via node)"
 network_policies:
   internet:
     name: internet
     endpoints:
-      - host: "0.0.0.0/0"
-        port: 443
-        protocol: rest
-        enforcement: enforce
-        rules:
-          - allow: { method: GET, path: "/**" }
-          - allow: { method: POST, path: "/**" }
-          - allow: { method: PUT, path: "/**" }
-          - allow: { method: PATCH, path: "/**" }
+      - { host: httpbin.org, port: 443, tls: skip, access: full }
+      - { host: github.com, port: 443, tls: skip, access: full }
+      - { host: api.github.com, port: 443, tls: skip, access: full }
+      - { host: "*.github.com", port: 443, tls: skip, access: full }
+      - { host: "*.githubusercontent.com", port: 443, tls: skip, access: full }
+      - { host: pypi.org, port: 443, tls: skip, access: full }
+      - { host: "*.pythonhosted.org", port: 443, tls: skip, access: full }
+      - { host: registry.npmjs.org, port: 443, tls: skip, access: full }
+      - { host: "*.wikipedia.org", port: 443, tls: skip, access: full }
     binaries:
-      - { path: /usr/bin/curl }
-      - { path: /usr/bin/wget }
-      - { path: /usr/bin/git }
       - { path: /usr/local/bin/node }
+      - { path: /usr/bin/node }
+      - { path: /usr/bin/curl }
       - { path: /usr/bin/python3 }
+      - { path: /usr/local/bin/python3 }
+      - { path: /usr/bin/git }

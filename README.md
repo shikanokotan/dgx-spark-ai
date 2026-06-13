@@ -41,6 +41,8 @@ setup/                   run on the Spark, once
   install-comfyui.sh     venv + torch (cu130/aarch64) + ComfyUI
   download-models.sh     Qwen-Image 2512 + encoders + VAE + anime LoRAs
   enable-multiuser.sh    let other local Spark accounts share the stack
+  apply-egress-policy.sh grant the NemoClaw agent web_fetch egress
+  policies/internet.yaml the agent's HTTPS egress allowlist (hostname-based)
 docs/samples/            example outputs
 ```
 
